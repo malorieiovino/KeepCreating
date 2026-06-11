@@ -240,7 +240,7 @@
   <!-- Config warning — shown until SCRIPT_URL is set -->
   <div id="config-banner" class="config-banner" style="display:none">
     <strong>⚙️ Setup needed</strong>
-    Open this file in a text editor and replace <code>https://script.google.com/macros/s/AKfycbzl1lv_g5bxFilLCDPvjLjIB-uMUa3lLAs7Ny0ohiysRTRvzSqWUmdvfNI4NoPDz2sQ/exec</code> with your Google Apps Script web app URL. See the README for instructions.
+    Open this file in a text editor and replace <code>YOUR_SCRIPT_URL_HERE</code> with your Google Apps Script web app URL. See the README for instructions.
   </div>
 
   <div class="tab-bar">
@@ -313,7 +313,7 @@
 <script>
 // ─────────────────────────────────────────────
 // 🔧 PASTE YOUR SCRIPT URL HERE (step 2 of setup)
-const SCRIPT_URL = https:"//script.google.com/macros/s/AKfycbzl1lv_g5bxFilLCDPvjLjIB-uMUa3lLAs7Ny0ohiysRTRvzSqWUmdvfNI4NoPDz2sQ/exec;"
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzl1lv_g5bxFilLCDPvjLjIB-uMUa3lLAs7Ny0ohiysRTRvzSqWUmdvfNI4NoPDz2sQ/exec";
 // ─────────────────────────────────────────────
 
 let students = [];
@@ -324,7 +324,7 @@ let sigDrawing = false, sigHasContent = false, sigCtx = null;
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
-  if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzl1lv_g5bxFilLCDPvjLjIB-uMUa3lLAs7Ny0ohiysRTRvzSqWUmdvfNI4NoPDz2sQ/exec") {
+  if (SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") {
     document.getElementById('config-banner').style.display = 'block';
   }
   initDateBadge();
@@ -354,7 +354,7 @@ function initDateBadge() {
 
 // ── LOAD STUDENTS FROM GOOGLE SHEETS ──
 async function loadStudents() {
-  if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzl1lv_g5bxFilLCDPvjLjIB-uMUa3lLAs7Ny0ohiysRTRvzSqWUmdvfNI4NoPDz2sQ/exec") {
+  if (SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") {
     // Demo mode — use local sample data
     students = [
       { id: 1, fname: "Maria", lname: "Santos", dds: "DDS-00411", defaultService: "Individual instruction" },
@@ -465,7 +465,7 @@ async function submitCheckin() {
   save();
 
   // Log to Google Sheets
-  if (SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzl1lv_g5bxFilLCDPvjLjIB-uMUa3lLAs7Ny0ohiysRTRvzSqWUmdvfNI4NoPDz2sQ/exec") {
+  if (SCRIPT_URL !== "YOUR_SCRIPT_URL_HERE") {
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
