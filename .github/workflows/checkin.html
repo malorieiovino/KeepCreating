@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Art Wellness Center</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  /* ── PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW ── */
+  /* See setup instructions in the README */
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-mid: #5DCAA5;
+    --green-dark: #0F6E56;
+    --green-darker: #085041;
+    --amber-light: #FAEEDA;
+    --amber-dark: #854F0B;
+    --red-light: #FCEBEB;
+    --red-dark: #A32D2D;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f0;
+    min-height: 100vh;
+    color: #1a1a1a;
+  }
+
+  .app { max-width: 820px; margin: 0 auto; padding: 1rem; }
+
+  /* Tab bar */
+  .tab-bar { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .tab {
+    padding: 8px 18px; border-radius: var(--radius-md);
+    border: 0.5px solid #ccc; background: white;
+    font-size: 14px; cursor: pointer; color: #666;
+    font-family: inherit;
+  }
+  .tab.active { background: var(--green); color: white; border-color: var(--green); font-weight: 500; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: white; border: 0.5px solid #e0e0d8;
+    border-radius: var(--radius-lg); padding: 2rem;
+  }
+
+  /* Check-in header */
+  .checkin-header { text-align: center; margin-bottom: 2rem; }
+  .checkin-header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .checkin-header p { font-size: 14px; color: #666; }
+  .date-badge {
+    display: inline-block; background: var(--green-light);
+    color: var(--green-dark); font-size: 13px;
+    padding: 4px 14px; border-radius: 20px; margin-bottom: 1rem; font-weight: 500;
+  }
+
+  /* Form fields */
+  .field-group { margin-bottom: 1.25rem; }
+  .field-label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
+  select, input[type=text], textarea {
+    width: 100%; padding: 10px 12px;
+    border-radius: var(--radius-md); border: 0.5px solid #ccc;
+    background: white; font-size: 15px; color: #1a1a1a;
+    font-family: inherit;
+  }
+  select:focus, input:focus, textarea:focus {
+    outline: none; border-color: var(--green);
+  }
+
+  /* Service options */
+  .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .service-option {
+    border: 0.5px solid #ccc; border-radius: var(--radius-md);
+    padding: 18px 12px; cursor: pointer; background: white;
+    text-align: center; transition: border-color 0.15s;
+  }
+  .service-option.selected { border: 2px solid var(--green); background: var(--green-light); }
+  .service-option .svc-name { font-size: 15px; font-weight: 500; }
+
+  /* Signature */
+  .sig-area {
+    border: 0.5px solid #ccc; border-radius: var(--radius-md);
+    background: #fafaf8; position: relative; height: 150px;
+    overflow: hidden; cursor: crosshair; touch-action: none;
+  }
+  .sig-area canvas { display: block; width: 100%; height: 100%; }
+  .sig-placeholder {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px; color: #aaa; pointer-events: none;
+  }
+  .sig-clear {
+    font-size: 12px; color: #888; cursor: pointer;
+    text-decoration: underline; margin-top: 6px; display: inline-block;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%; padding: 14px; background: var(--green); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 16px; font-weight: 500; cursor: pointer;
+    font-family: inherit; margin-top: 0.5rem;
+  }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-primary:active { opacity: 0.9; }
+  .btn-secondary {
+    padding: 8px 16px; background: white; color: #1a1a1a;
+    border: 0.5px solid #ccc; border-radius: var(--radius-md);
+    font-size: 14px; cursor: pointer; font-family: inherit;
+  }
+  .btn-danger {
+    padding: 8px 16px; background: white; color: var(--red-dark);
+    border: 0.5px solid #ccc; border-radius: var(--radius-md);
+    font-size: 14px; cursor: pointer; font-family: inherit;
+  }
+  .btn-sm-green {
+    padding: 6px 12px; background: var(--green); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+
+  /* Banners */
+  .success-banner {
+    background: var(--green-light); border: 0.5px solid var(--green-mid);
+    border-radius: var(--radius-md); padding: 1rem 1.25rem;
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;
+  }
+  .success-banner i { color: var(--green-dark); font-size: 20px; }
+  .success-banner p { font-size: 14px; color: var(--green-darker); font-weight: 500; }
+  .error-banner {
+    background: var(--red-light); border: 0.5px solid #f09595;
+    border-radius: var(--radius-md); padding: 1rem 1.25rem;
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;
+  }
+  .error-banner i { color: var(--red-dark); font-size: 20px; }
+  .error-banner p { font-size: 14px; color: var(--red-dark); }
+
+  /* Loading */
+  .loading-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: #888; padding: 1rem 0;
+  }
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid #ddd;
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Roster header */
+  .section-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 1rem;
+  }
+  .section-header h2 { font-size: 18px; font-weight: 500; }
+
+  /* Invoice list */
+  .invoice-list-item {
+    background: white; border: 0.5px solid #e0e0d8;
+    border-radius: var(--radius-md); padding: 14px 16px;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+  }
+  .invoice-list-item:hover { border-color: #aaa; }
+  .invoice-badge { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 500; }
+  .badge-pending { background: var(--amber-light); color: var(--amber-dark); }
+  .badge-sent { background: var(--green-light); color: var(--green-darker); }
+
+  /* Invoice preview */
+  .invoice-preview {
+    background: white; border: 0.5px solid #e0e0d8;
+    border-radius: var(--radius-lg); padding: 2rem; margin-top: 1rem;
+  }
+  .invoice-preview-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 2rem;
+  }
+  .biz-name { font-size: 20px; font-weight: 500; }
+  .biz-sub { font-size: 13px; color: #888; margin-top: 3px; }
+  .inv-number { font-size: 13px; color: #888; text-align: right; }
+  .inv-number strong { display: block; font-size: 18px; font-weight: 500; color: #1a1a1a; }
+  .inv-section { margin-bottom: 1.5rem; }
+  .inv-section-title {
+    font-size: 11px; color: #aaa; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 8px;
+  }
+  .inv-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .inv-table th {
+    text-align: left; padding: 8px 0;
+    border-bottom: 0.5px solid #e0e0d8;
+    font-weight: 500; font-size: 12px; color: #888;
+  }
+  .inv-table td {
+    padding: 10px 0; border-bottom: 0.5px solid #e0e0d8; color: #1a1a1a;
+  }
+  .inv-table td:last-child, .inv-table th:last-child { text-align: right; }
+  .inv-note-area {
+    width: 100%; border: 0.5px solid #ccc; border-radius: var(--radius-md);
+    padding: 8px 10px; font-size: 13px; font-family: inherit;
+    color: #1a1a1a; background: white; min-height: 60px; resize: vertical;
+  }
+  .sig-thumb { max-height: 44px; display: block; margin-top: 4px; opacity: 0.75; }
+  .action-row { display: flex; gap: 8px; margin-top: 1.5rem; flex-wrap: wrap; }
+
+  .empty-state {
+    text-align: center; padding: 3rem 1rem; color: #aaa; font-size: 14px;
+  }
+  .empty-state i { font-size: 32px; display: block; margin-bottom: 12px; opacity: 0.4; }
+
+  /* Config banner */
+  .config-banner {
+    background: #fff8e1; border: 1px solid #ffe082;
+    border-radius: var(--radius-md); padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem; font-size: 14px; color: #5d4037;
+  }
+  .config-banner strong { display: block; margin-bottom: 4px; }
+
+  @media print {
+    .tab-bar, .action-row, .btn-secondary, .btn-danger, button { display: none !important; }
+    .screen { display: block !important; }
+    #screen-checkin, #screen-roster { display: none !important; }
+    .invoice-list-item { display: none !important; }
+    #invoice-list-view { display: none !important; }
+    #invoice-detail-view { display: block !important; }
+    body { background: white; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Config warning — shown until SCRIPT_URL is set -->
+  <div id="config-banner" class="config-banner" style="display:none">
+    <strong>⚙️ Setup needed</strong>
+    Open this file in a text editor and replace <code>YOUR_SCRIPT_URL_HERE</code> with your Google Apps Script web app URL. See the README for instructions.
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="showScreen('checkin')"><i class="ti ti-writing"></i> Check-in</button>
+    <button class="tab" onclick="showScreen('invoices')"><i class="ti ti-file-invoice"></i> Invoices</button>
+  </div>
+
+  <!-- ── CHECK-IN SCREEN ── -->
+  <div id="screen-checkin" class="screen active">
+    <div id="checkin-feedback" style="display:none"></div>
+    <div class="card">
+      <div class="checkin-header">
+        <div class="date-badge" id="today-date"></div>
+        <h1>Student check-in</h1>
+        <p>Select a student, choose a service, and sign below</p>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Student name</label>
+        <div id="student-loading" class="loading-row"><div class="spinner"></div> Loading students…</div>
+        <select id="checkin-student" style="display:none">
+          <option value="">— Select student —</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Service</label>
+        <div class="service-grid">
+          <div class="service-option selected" data-service="Individual instruction" onclick="selectService(this)">
+            <div class="svc-name">Individual instruction</div>
+          </div>
+          <div class="service-option" data-service="Group class" onclick="selectService(this)">
+            <div class="svc-name">Group class</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Student signature and Acumen approval</label>
+        <div class="sig-area" id="sig-area">
+          <canvas id="sig-canvas"></canvas>
+          <div class="sig-placeholder" id="sig-placeholder">Sign here</div>
+        </div>
+        <span class="sig-clear" onclick="clearSig()">Clear signature</span>
+      </div>
+
+      <button class="btn-primary" id="checkin-btn" onclick="submitCheckin()">Complete check-in</button>
+    </div>
+  </div>
+
+  <!-- ── INVOICES SCREEN ── -->
+  <div id="screen-invoices" class="screen">
+    <div id="invoice-list-view">
+      <div class="section-header">
+        <h2>Invoices</h2>
+        <span style="font-size:13px; color:#888" id="invoice-count"></span>
+      </div>
+      <div id="invoice-list"></div>
+    </div>
+    <div id="invoice-detail-view" style="display:none">
+      <button class="btn-secondary" onclick="showInvoiceList()" style="margin-bottom:1rem">
+        <i class="ti ti-arrow-left"></i> All invoices
+      </button>
+      <div class="invoice-preview" id="invoice-preview"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// 🔧 PASTE YOUR SCRIPT URL HERE (step 2 of setup)
+const SCRIPT_URL = "YOUR_SCRIPT_URL_HERE";
+// ─────────────────────────────────────────────
+
+let students = [];
+let invoices = JSON.parse(localStorage.getItem('awc_invoices') || '[]');
+let nextInvoiceNum = parseInt(localStorage.getItem('awc_inv_num') || '1001');
+let selectedService = "Individual instruction";
+let sigDrawing = false, sigHasContent = false, sigCtx = null;
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  if (SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") {
+    document.getElementById('config-banner').style.display = 'block';
+  }
+  initDateBadge();
+  loadStudents();
+  setTimeout(initSig, 100);
+});
+
+function save() {
+  localStorage.setItem('awc_invoices', JSON.stringify(invoices));
+  localStorage.setItem('awc_inv_num', String(nextInvoiceNum));
+}
+
+// ── SCREENS ──
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.tab')[['checkin','invoices'].indexOf(name)].classList.add('active');
+  if (name === 'invoices') renderInvoiceList();
+}
+
+function initDateBadge() {
+  const d = new Date();
+  document.getElementById('today-date').textContent =
+    d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+}
+
+// ── LOAD STUDENTS FROM GOOGLE SHEETS ──
+async function loadStudents() {
+  if (SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") {
+    // Demo mode — use local sample data
+    students = [
+      { id: 1, fname: "Maria", lname: "Santos", dds: "DDS-00411", defaultService: "Individual instruction" },
+      { id: 2, fname: "James", lname: "Cooper", dds: "DDS-00188", defaultService: "Individual instruction" },
+      { id: 3, fname: "Priya", lname: "Mehta",  dds: "DDS-00302", defaultService: "Group class" },
+    ];
+    populateStudentDropdown();
+    return;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL + "?action=getStudents");
+    const data = await res.json();
+    students = data.students || [];
+    populateStudentDropdown();
+  } catch (err) {
+    showFeedback('error', 'Could not load students from Google Sheets. Check your connection and script URL.');
+    populateStudentDropdown();
+  }
+}
+
+function populateStudentDropdown() {
+  const loading = document.getElementById('student-loading');
+  const sel = document.getElementById('checkin-student');
+  loading.style.display = 'none';
+  sel.style.display = 'block';
+  sel.innerHTML = '<option value="">— Select student —</option>';
+  [...students].sort((a,b) => a.lname.localeCompare(b.lname)).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.lname + ', ' + s.fname;
+    sel.appendChild(opt);
+  });
+}
+
+// ── SERVICE SELECTION ──
+function selectService(el) {
+  document.querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedService = el.dataset.service;
+}
+
+// ── SIGNATURE PAD ──
+function initSig() {
+  const canvas = document.getElementById('sig-canvas');
+  const area = document.getElementById('sig-area');
+  canvas.width = area.offsetWidth || 700;
+  canvas.height = 150;
+  sigCtx = canvas.getContext('2d');
+  sigCtx.strokeStyle = '#111';
+  sigCtx.lineWidth = 2;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    const s = e.touches ? e.touches[0] : e;
+    return { x: (s.clientX - r.left) * (canvas.width / r.width), y: (s.clientY - r.top) * (canvas.height / r.height) };
+  }
+  canvas.addEventListener('mousedown', e => { sigDrawing = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); });
+  canvas.addEventListener('mousemove', e => { if (!sigDrawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); markSigned(); });
+  canvas.addEventListener('mouseup', () => sigDrawing = false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }, { passive: false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!sigDrawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); markSigned(); }, { passive: false });
+  canvas.addEventListener('touchend', () => sigDrawing = false);
+}
+
+function markSigned() {
+  sigHasContent = true;
+  document.getElementById('sig-placeholder').style.display = 'none';
+}
+
+function clearSig() {
+  if (!sigCtx) return;
+  sigCtx.clearRect(0, 0, sigCtx.canvas.width, sigCtx.canvas.height);
+  sigHasContent = false;
+  document.getElementById('sig-placeholder').style.display = 'block';
+}
+
+// ── CHECK-IN SUBMIT ──
+async function submitCheckin() {
+  const studentId = parseInt(document.getElementById('checkin-student').value);
+  if (!studentId) { alert('Please select a student.'); return; }
+  if (!sigHasContent) { alert('Please have the student sign before checking in.'); return; }
+
+  const btn = document.getElementById('checkin-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const student = students.find(s => s.id === studentId);
+  const sigData = document.getElementById('sig-canvas').toDataURL();
+  const invoiceId = nextInvoiceNum++;
+
+  const invoice = {
+    id: invoiceId,
+    studentId,
+    studentName: student.fname + ' ' + student.lname,
+    dds: student.dds || '',
+    service: selectedService,
+    date: new Date().toISOString(),
+    sigData,
+    status: 'pending',
+    notes: '',
+    amount: ''
+  };
+
+  invoices.unshift(invoice);
+  save();
+
+  // Log to Google Sheets
+  if (SCRIPT_URL !== "YOUR_SCRIPT_URL_HERE") {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'logCheckin',
+          invoiceId,
+          studentName: invoice.studentName,
+          dds: invoice.dds,
+          service: invoice.service,
+          date: invoice.date
+        })
+      });
+    } catch (e) {
+      console.warn('Sheet log failed, saved locally only.');
+    }
+  }
+
+  showFeedback('success', `Check-in complete for ${student.fname} ${student.lname} — invoice #${invoiceId} created`);
+  resetCheckinForm();
+  btn.disabled = false;
+  btn.textContent = 'Complete check-in';
+}
+
+function resetCheckinForm() {
+  clearSig();
+  document.getElementById('checkin-student').value = '';
+  document.querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.service-option')[0].classList.add('selected');
+  selectedService = "Individual instruction";
+}
+
+function showFeedback(type, msg) {
+  const div = document.getElementById('checkin-feedback');
+  div.style.display = 'block';
+  div.innerHTML = type === 'success'
+    ? `<div class="success-banner"><i class="ti ti-circle-check"></i><p>${msg}</p></div>`
+    : `<div class="error-banner"><i class="ti ti-alert-circle"></i><p>${msg}</p></div>`;
+  if (type === 'success') setTimeout(() => div.style.display = 'none', 4500);
+}
+
+// ── INVOICES ──
+function renderInvoiceList() {
+  const list = document.getElementById('invoice-list');
+  document.getElementById('invoice-count').textContent = invoices.length + ' total';
+  if (!invoices.length) {
+    list.innerHTML = '<div class="empty-state"><i class="ti ti-file-invoice"></i>No invoices yet. Check in a student to create one.</div>';
+    return;
+  }
+  list.innerHTML = invoices.map(inv => {
+    const d = new Date(inv.date);
+    const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    return `<div class="invoice-list-item" onclick="showInvoiceDetail(${inv.id})">
+      <div style="flex:1">
+        <div style="font-size:14px; font-weight:500">${inv.studentName}</div>
+        <div style="font-size:12px; color:#888; margin-top:2px">${inv.service} · ${dateStr}</div>
+      </div>
+      <div style="text-align:right; margin-right:8px">
+        <span class="invoice-badge ${inv.status === 'pending' ? 'badge-pending' : 'badge-sent'}">${inv.status}</span>
+      </div>
+      <i class="ti ti-chevron-right" style="color:#bbb; font-size:16px"></i>
+    </div>`;
+  }).join('');
+}
+
+function showInvoiceDetail(id) {
+  const inv = invoices.find(i => i.id === id);
+  if (!inv) return;
+  document.getElementById('invoice-list-view').style.display = 'none';
+  document.getElementById('invoice-detail-view').style.display = 'block';
+  const d = new Date(inv.date);
+  const dateStr = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  document.getElementById('invoice-preview').innerHTML = `
+    <div class="invoice-preview-header">
+      <div>
+        <div class="biz-name">Art Wellness Center</div>
+        <div class="biz-sub">Art therapy &amp; creative wellness services</div>
+      </div>
+      <div class="inv-number">
+        <span>Invoice</span>
+        <strong>#${inv.id}</strong>
+        <div style="font-size:12px; margin-top:4px; color:#888">${dateStr}</div>
+      </div>
+    </div>
+    <div class="inv-section" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+      <div>
+        <div class="inv-section-title">Billed to</div>
+        <div style="font-size:14px; font-weight:500">Acumen Fiscal Agent</div>
+        <div style="font-size:13px; color:#888; margin-top:2px">Dept. of Developmental Disabilities</div>
+      </div>
+      <div>
+        <div class="inv-section-title">Client</div>
+        <div style="font-size:14px; font-weight:500">${inv.studentName}</div>
+        ${inv.dds ? `<div style="font-size:13px; color:#888; margin-top:2px">DDS ID: ${inv.dds}</div>` : ''}
+      </div>
+    </div>
+    <div class="inv-section">
+      <table class="inv-table">
+        <thead><tr><th>Service</th><th>Date</th><th>Amount</th></tr></thead>
+        <tbody><tr>
+          <td><input type="text" value="${inv.service}" onchange="updateField(${inv.id},'service',this.value)"
+            style="border:none;background:transparent;font-size:14px;font-family:inherit;width:100%;padding:0"></td>
+          <td style="font-size:13px;color:#888">${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+          <td><input type="text" value="${inv.amount || ''}" placeholder="Enter amount"
+            onchange="updateField(${inv.id},'amount',this.value)"
+            style="border:none;background:transparent;font-size:14px;font-family:inherit;width:100px;text-align:right;padding:0"></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="inv-section">
+      <div class="inv-section-title">Student signature and Acumen approval</div>
+      <img src="${inv.sigData}" class="sig-thumb" alt="Signature">
+    </div>
+    <div class="inv-section">
+      <div class="inv-section-title">Notes</div>
+      <textarea class="inv-note-area" placeholder="Add any notes for Acumen…"
+        onchange="updateField(${inv.id},'notes',this.value)">${inv.notes || ''}</textarea>
+    </div>
+    <div class="action-row">
+      <button class="btn-primary" style="width:auto;padding:10px 20px;margin-top:0" onclick="window.print()">
+        <i class="ti ti-download"></i> Download / print PDF
+      </button>
+      <button class="btn-secondary" onclick="markSent(${inv.id})"><i class="ti ti-send"></i> Mark as sent</button>
+      <button class="btn-danger" onclick="deleteInvoice(${inv.id})"><i class="ti ti-trash"></i> Delete</button>
+    </div>`;
+}
+
+function showInvoiceList() {
+  document.getElementById('invoice-list-view').style.display = 'block';
+  document.getElementById('invoice-detail-view').style.display = 'none';
+  renderInvoiceList();
+}
+
+function updateField(id, field, value) {
+  const inv = invoices.find(i => i.id === id);
+  if (inv) { inv[field] = value; save(); }
+}
+
+function markSent(id) {
+  updateField(id, 'status', 'sent');
+  showInvoiceList();
+}
+
+function deleteInvoice(id) {
+  if (!confirm('Delete this invoice?')) return;
+  invoices = invoices.filter(i => i.id !== id);
+  save();
+  showInvoiceList();
+}
+</script>
+</body>
+</html>
